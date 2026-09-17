@@ -67,6 +67,8 @@ struct ParejaWidgetEntryView: View {
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fill)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .clipped()
 
                     if !entry.mensaje.isEmpty {
                         Text(entry.mensaje)
@@ -74,7 +76,7 @@ struct ParejaWidgetEntryView: View {
                             .foregroundColor(.white)
                             .lineLimit(1)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, 6)
                             .padding(.horizontal, 8)
                             .background(Color.gray)
                     }
