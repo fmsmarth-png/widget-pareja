@@ -1,35 +1,50 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  Image,
+  Dimensions,
+} from 'react-native';
+import { useFonts } from 'expo-font';
 import { supabase } from '../services/supabase/supabase';
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('screen');
+
+const FRAMES = [
+  require('../../assets/ui/auth/frame_1.jpg'),
+  require('../../assets/ui/auth/frame_2.jpg'),
+  require('../../assets/ui/auth/frame_3.jpg'),
+  require('../../assets/ui/auth/frame_4.jpg'),
+];
 
 export default function AuthScreen({ navigation }: any) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [frameIndex, setFrameIndex] = useState(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  async function signUp() {
-    if (!email || !password) {
-      Alert.alert('Atención', 'Ingresa correo y contraseña.');
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) {
-      Alert.alert('Error', error.message);
-    } else if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{ id: data.user.id, nombre: email.split('@')[0] }]);
-      if (profileError) {
-        Alert.alert('Error', profileError.message);
-      } else {
-        Alert.alert('Cuenta creada', 'Ahora inicia sesión.');
-      }
-    }
-    setLoading(false);
-  }
+  const [fontsLoaded] = useFonts({
+    PressStart2P: require('../../assets/fonts/PressStart2P-Regular.ttf'),
+  });
 
-  async function signIn() {
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setFrameIndex(prev => (prev + 1) % FRAMES.length);
+    }, 250);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  const signIn = useCallback(async () => {
     if (!email || !password) {
       Alert.alert('Atención', 'Ingresa correo y contraseña.');
       return;
@@ -68,78 +83,122 @@ export default function AuthScreen({ navigation }: any) {
     } else {
       navigation.reset({ index: 0, routes: [{ name: 'Character' }] });
     }
-  }
+  }, [email, password, navigation]);
+
+  if (!fontsLoaded) return <View style={styles.container} />;
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFF5F5" />
-      <Text style={styles.emoji}>🔐</Text>
-      <Text style={styles.title}>Identifícate</Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Correo electrónico"
-        placeholderTextColor="#CBA8AE"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contraseña (mín. 6 caracteres)"
-        placeholderTextColor="#CBA8AE"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+      {FRAMES.map((frame, i) => (
+        <Image
+          key={i}
+          source={frame}
+          style={[
+            styles.bgFrame,
+            { opacity: i === frameIndex ? 1 : 0 },
+          ]}
+          resizeMode="cover"
+        />
+      ))}
 
-      <TouchableOpacity style={styles.botonPrimario} onPress={signIn} disabled={loading} activeOpacity={0.8}>
-        <Text style={styles.botonPrimarioTexto}>{loading ? 'Cargando...' : 'Iniciar Sesión'}</Text>
-      </TouchableOpacity>
+      <KeyboardAvoidingView
+        style={styles.overlay}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <View style={styles.spacer} />
 
-      <TouchableOpacity style={styles.botonSecundario} onPress={signUp} disabled={loading} activeOpacity={0.8}>
-        <Text style={styles.botonSecundarioTexto}>Crear Cuenta</Text>
-      </TouchableOpacity>
-    </KeyboardAvoidingView>
+        <View style={styles.formArea}>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo"
+            placeholderTextColor="rgba(255,245,230,0.5)"
+            value={email}
+            onChangeText={setEmail}
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Contraseña"
+            placeholderTextColor="rgba(255,245,230,0.5)"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <TouchableOpacity
+            style={styles.btnPrimary}
+            onPress={signIn}
+            disabled={loading}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.btnPrimaryText}>
+              {loading ? 'Cargando...' : 'Entrar'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.bottomSpacer} />
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#FFF5F5' },
-  emoji: { fontSize: 48, textAlign: 'center', marginBottom: 12 },
-  title: { fontSize: 28, fontWeight: '800', textAlign: 'center', color: '#5A3E42', marginBottom: 28 },
-  input: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 2,
-    borderColor: '#F0D4D8',
-    padding: 14,
-    borderRadius: 14,
-    fontSize: 16,
-    color: '#5A3E42',
-    marginBottom: 14,
+  container: {
+    flex: 1,
+    backgroundColor: '#1A1A3E',
   },
-  botonPrimario: {
-    backgroundColor: '#E8788A',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginTop: 8,
+  bgFrame: {
+    position: 'absolute',
+    width: SCREEN_W,
+    height: SCREEN_H,
+    top: 0,
+    left: 0,
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    padding: 24,
+  },
+  spacer: {
+    flex: 1,
+  },
+  formArea: {
+    width: '100%',
+  },
+  input: {
+    backgroundColor: 'rgba(42, 42, 94, 0.6)',
+    borderWidth: 2,
+    borderColor: 'rgba(139, 94, 60, 0.7)',
+    borderRadius: 8,
+    padding: 14,
+    fontSize: 10,
+    color: '#FFF5E6',
+    fontFamily: 'PressStart2P',
     marginBottom: 12,
-    shadowColor: '#E8788A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+  },
+  btnPrimary: {
+    backgroundColor: 'rgba(232, 120, 138, 0.85)',
+    paddingVertical: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 4,
+    borderWidth: 3,
+    borderColor: '#C04060',
     elevation: 4,
   },
-  botonPrimarioTexto: { color: '#FFFFFF', fontSize: 16, fontWeight: '700' },
-  botonSecundario: {
-    backgroundColor: '#FFFFFF',
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#E8788A',
+  btnPrimaryText: {
+    fontFamily: 'PressStart2P',
+    color: '#FFFFFF',
+    fontSize: 10,
+    textShadowColor: '#C04060',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 0,
   },
-  botonSecundarioTexto: { color: '#E8788A', fontSize: 16, fontWeight: '700' },
+  bottomSpacer: {
+    height: 24,
+  },
 });

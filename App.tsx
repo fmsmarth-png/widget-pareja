@@ -4,7 +4,6 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { supabase } from './app/services/supabase/supabase';
 
-import WelcomeScreen from './app/screens/WelcomeScreen';
 import AuthScreen from './app/screens/AuthScreen';
 import CoupleScreen from './app/screens/CoupleScreen';
 import CharacterScreen from './app/screens/CharacterScreen';
@@ -23,7 +22,7 @@ export default function App() {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
-      setInitialRoute('Welcome');
+      setInitialRoute('Auth');
       return;
     }
 
@@ -69,11 +68,10 @@ export default function App() {
           contentStyle: { backgroundColor: '#FFF5F5' },
         }}
       >
-        <Stack.Screen name="Welcome" component={WelcomeScreen} options={{ title: 'Inicio', headerShown: false }} />
-        <Stack.Screen name="Auth" component={AuthScreen} options={{ title: 'Cuenta', headerBackVisible: false }} />
+        <Stack.Screen name="Auth" component={AuthScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Couple" component={CoupleScreen} options={{ title: 'Vincular', headerBackVisible: false }} />
         <Stack.Screen name="Character" component={CharacterScreen} options={{ title: 'Elige tu Personaje', headerBackVisible: false }} />
-        <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Mi Pareja', headerBackVisible: false }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

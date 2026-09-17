@@ -28,11 +28,9 @@
         <data android:scheme="exp+widget-pareja"/>
       </intent-filter>
     </activity>
-
     <receiver
         android:name=".widget.ParejaWidgetProvider"
-        android:exported="true"
-        android:label="Mi Pareja">
+        android:exported="true">
       <intent-filter>
         <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
       </intent-filter>

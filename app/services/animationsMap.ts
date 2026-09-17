@@ -65,8 +65,4 @@ export const ANIMACIONES_ESTADOS: Record<string, AnimacionConfig> = {
     fps: 3,
   },
 
-  // GIF placeholder para los demás mientras se crean sus sprites
-  '1_TRABAJANDO': { source: require('../../assets/animations/default.gif'), type: 'gif' },
-  '2_TRABAJANDO': { source: require('../../assets/animations/default.gif'), type: 'gif' },
-  '4_TRABAJANDO': { source: require('../../assets/animations/default.gif'), type: 'gif' },
 };

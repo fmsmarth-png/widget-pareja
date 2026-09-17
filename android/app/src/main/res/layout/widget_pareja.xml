@@ -3,69 +3,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
     android:background="@drawable/widget_background"
-    android:padding="12dp">
+    android:clipToOutline="true"
+    android:clipChildren="true">
 
     <ViewFlipper
         android:id="@+id/widget_flipper"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:flipInterval="333"
-        android:autoStart="true"
-        android:inAnimation="@android:anim/fade_in"
-        android:outAnimation="@android:anim/fade_out">
+        android:autoStart="true">
 
         <ImageView
             android:id="@+id/frame_0"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter" />
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/frame_1"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter" />
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/frame_2"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitCenter" />
-
-        <ImageView
-            android:id="@+id/frame_3"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="fitCenter" />
+            android:scaleType="centerCrop" />
 
     </ViewFlipper>
 
     <TextView
-        android:id="@+id/widget_estado"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="8dp"
-        android:textSize="15sp"
-        android:textColor="#FF5A3E42"
-        android:textStyle="bold"
-        android:text="..." />
-
-    <TextView
         android:id="@+id/widget_mensaje"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="4dp"
-        android:textSize="12sp"
-        android:textColor="#FF8A6A70"
-        android:textStyle="italic"
-        android:maxLines="2"
-        android:ellipsize="end"
+        android:background="#FF888888"
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:gravity="center"
+        android:textSize="10sp"
+        android:textColor="#FFFFFFFF"
+        android:textStyle="bold"
+        android:maxLines="1"
+        android:ellipsize="end"
         android:text="" />
 
 </LinearLayout>

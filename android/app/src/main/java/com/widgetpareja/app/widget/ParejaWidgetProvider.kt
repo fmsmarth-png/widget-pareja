@@ -1,13 +1,16 @@
 package com.widgetpareja.app.widget
 
+import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.RemoteViews
 import com.widgetpareja.app.R
+import com.widgetpareja.app.MainActivity
 import java.io.InputStream
 
 class ParejaWidgetProvider : AppWidgetProvider() {
@@ -28,19 +31,16 @@ class ParejaWidgetProvider : AppWidgetProvider() {
             "PENSANDO_EN_TI" to "Pensando en ti"
         )
 
-        private val ESTADO_EMOJI = mapOf(
-            "TRABAJANDO" to "🏗️",
-            "EN_CASA" to "🏠",
-            "COMIENDO" to "🍕",
-            "DURMIENDO" to "😴",
-            "LIBRE" to "🙂",
-            "PENSANDO_EN_TI" to "❤️"
-        )
-
         private val ESTADO_ARCHIVO = mapOf(
             "TRABAJANDO" to "trabajando",
             "COMIENDO" to "comiendo",
             "DURMIENDO" to "durmiendo"
+        )
+
+        private val FRAME_SEQUENCE = mapOf(
+            "TRABAJANDO" to intArrayOf(0, 2, 3),
+            "COMIENDO" to intArrayOf(0, 1, 2, 3),
+            "DURMIENDO" to intArrayOf(0, 1, 2, 3)
         )
 
         fun updateAllWidgets(context: Context) {
@@ -56,24 +56,41 @@ class ParejaWidgetProvider : AppWidgetProvider() {
 
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (widgetId in appWidgetIds) {
-            updateWidget(context, appWidgetManager, widgetId)
+            try {
+                updateWidget(context, appWidgetManager, widgetId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     private fun updateWidget(context: Context, manager: AppWidgetManager, widgetId: Int) {
+        val views = RemoteViews(context.packageName, R.layout.widget_pareja)
+
+        val openAppIntent = Intent(context, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context, 0, openAppIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setOnClickPendingIntent(R.id.widget_flipper, pendingIntent)
+
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val estado = prefs.getString(KEY_ESTADO, "") ?: ""
+        val estado = prefs.getString(KEY_ESTADO, null)
+
+        if (estado == null) {
+            views.setImageViewResource(R.id.frame_0, R.mipmap.ic_launcher)
+            views.setImageViewResource(R.id.frame_1, R.mipmap.ic_launcher)
+            views.setImageViewResource(R.id.frame_2, R.mipmap.ic_launcher)
+            views.setTextViewText(R.id.widget_mensaje, "Abre la app")
+            views.setViewVisibility(R.id.widget_mensaje, android.view.View.VISIBLE)
+            manager.updateAppWidget(widgetId, views)
+            return
+        }
+
         val mensaje = prefs.getString(KEY_MENSAJE, "") ?: ""
         val carpeta = prefs.getString(KEY_PERSONAJE_CARPETA, "perro") ?: "perro"
 
-        val views = RemoteViews(context.packageName, R.layout.widget_pareja)
-
-        val displayText = ESTADO_EMOJI.getOrDefault(estado, "") + " " +
-                ESTADO_DISPLAY.getOrDefault(estado, "Sin estado")
-        views.setTextViewText(R.id.widget_estado, displayText)
-
         if (mensaje.isNotEmpty()) {
-            views.setTextViewText(R.id.widget_mensaje, "\"$mensaje\"")
+            views.setTextViewText(R.id.widget_mensaje, mensaje)
             views.setViewVisibility(R.id.widget_mensaje, android.view.View.VISIBLE)
         } else {
             views.setViewVisibility(R.id.widget_mensaje, android.view.View.GONE)
@@ -81,30 +98,29 @@ class ParejaWidgetProvider : AppWidgetProvider() {
 
         val archivo = ESTADO_ARCHIVO[estado]
         if (archivo != null) {
-            val frames = loadSpriteFrames(context, carpeta, archivo, 4)
-            if (frames != null && frames.size == 4) {
+            val sequence = FRAME_SEQUENCE[estado] ?: intArrayOf(0, 1, 2)
+            val frames = loadSpriteFrames(context, carpeta, archivo, 4, sequence)
+            if (frames != null && frames.size >= 3) {
                 views.setImageViewBitmap(R.id.frame_0, frames[0])
                 views.setImageViewBitmap(R.id.frame_1, frames[1])
                 views.setImageViewBitmap(R.id.frame_2, frames[2])
-                views.setImageViewBitmap(R.id.frame_3, frames[3])
-
-                views.setInt(R.id.widget_flipper, "setFlipInterval", 333)
-                views.setBoolean(R.id.widget_flipper, "setAutoStart", true)
-                views.setViewVisibility(R.id.widget_flipper, android.view.View.VISIBLE)
+            } else {
+                setAllFramesToIcon(views)
             }
         } else {
-            val emoji = ESTADO_EMOJI.getOrDefault(estado, "✨")
-            setEmojiPlaceholder(views, emoji)
+            setAllFramesToIcon(views)
         }
 
         manager.updateAppWidget(widgetId, views)
     }
 
-    private fun setEmojiPlaceholder(views: RemoteViews, emoji: String) {
-        views.setViewVisibility(R.id.widget_flipper, android.view.View.VISIBLE)
+    private fun setAllFramesToIcon(views: RemoteViews) {
+        views.setImageViewResource(R.id.frame_0, R.mipmap.ic_launcher)
+        views.setImageViewResource(R.id.frame_1, R.mipmap.ic_launcher)
+        views.setImageViewResource(R.id.frame_2, R.mipmap.ic_launcher)
     }
 
-    private fun loadSpriteFrames(context: Context, carpeta: String, archivo: String, frameCount: Int): List<Bitmap>? {
+    private fun loadSpriteFrames(context: Context, carpeta: String, archivo: String, totalFrames: Int, sequence: IntArray): List<Bitmap>? {
         return try {
             val assetPath = "characters/$carpeta/$archivo.jpg"
             val inputStream: InputStream = context.assets.open(assetPath)
@@ -113,14 +129,15 @@ class ParejaWidgetProvider : AppWidgetProvider() {
 
             if (spriteSheet == null) return null
 
-            val frameWidth = spriteSheet.width / frameCount
+            val frameWidth = spriteSheet.width / totalFrames
             val frameHeight = spriteSheet.height
             val frames = mutableListOf<Bitmap>()
 
-            for (i in 0 until frameCount) {
+            for (idx in sequence) {
+                val safeIdx = idx.coerceIn(0, totalFrames - 1)
                 val frame = Bitmap.createBitmap(
                     spriteSheet,
-                    i * frameWidth, 0,
+                    safeIdx * frameWidth, 0,
                     frameWidth, frameHeight
                 )
                 frames.add(frame)

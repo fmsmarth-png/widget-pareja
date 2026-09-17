@@ -1,6 +1,8 @@
 import { NativeModules, Platform } from 'react-native';
 
-const { ParejaWidget } = NativeModules;
+const ParejaWidget = Platform.OS === 'android'
+  ? NativeModules.ParejaWidget
+  : NativeModules.ParejaWidgetModule;
 
 export async function updateWidget(
   estado: string,
@@ -8,7 +10,7 @@ export async function updateWidget(
   personajeId: string,
   carpeta: string,
 ): Promise<void> {
-  if (Platform.OS !== 'android' || !ParejaWidget) return;
+  if (!ParejaWidget) return;
   try {
     await ParejaWidget.updateWidgetData(estado, mensaje, personajeId, carpeta);
   } catch (_) {}
