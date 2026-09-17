@@ -132,7 +132,7 @@ struct ParejaWidgetEntryView: View {
     }
 
     private func loadSpriteFrame(carpeta: String, archivo: String, frameIndex: Int) -> UIImage? {
-        guard let bundleURL = Bundle.main.url(forResource: archivo, withExtension: "jpg", subdirectory: "characters/\(carpeta)"),
+        guard let bundleURL = Bundle.main.url(forResource: archivo, withExtension: "jpg"),
               let spriteSheet = UIImage(contentsOfFile: bundleURL.path) else {
             return nil
         }
