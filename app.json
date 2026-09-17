@@ -34,8 +34,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "4eb0a862-ed1b-4da2-8eda-7a7ed96b6fd4"
       }
-    }
+    },
+    "owner": "camifloresm"
   }
 }
