@@ -116,7 +116,6 @@ struct ParejaWidgetEntryView: View {
             }
         }
         .widgetURL(URL(string: "widgetpareja://open"))
-        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 
     private func emojiForEstado(_ estado: String) -> String {
@@ -168,5 +167,6 @@ struct ParejaWidget: Widget {
         .configurationDisplayName("Mi Pareja")
         .description("Muestra el estado de tu pareja")
         .supportedFamilies([.systemSmall, .systemMedium])
+        .contentMarginsDisabled()
     }
 }
