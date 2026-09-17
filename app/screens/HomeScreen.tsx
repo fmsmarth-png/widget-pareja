@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../services/supabase/supabase';
 import { PERSONAJES_DATA, ANIMACIONES_ESTADOS, AnimacionConfig } from '../services/animationsMap';
 import SpriteAnimator from '../components/SpriteAnimator';
+import { updateWidget } from '../services/widgetBridge';
 
 const ESTADOS = [
   { id: 'TRABAJANDO', icono: '🏗️', texto: 'Trabajando' },
@@ -64,6 +65,8 @@ export default function HomeScreen({ navigation }: any) {
           if (nuevo && nuevo.user_id !== userId) {
             setEstadoPareja(nuevo);
             Animated.timing(fadeAnim, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+            const pData = PERSONAJES_DATA[personajeParejaId];
+            if (pData) updateWidget(nuevo.estado, nuevo.mensaje || '', personajeParejaId, pData.carpeta);
           }
           if (nuevo && nuevo.user_id === userId) {
             setMiEstado(nuevo);
@@ -146,6 +149,9 @@ export default function HomeScreen({ navigation }: any) {
       if (statusData) {
         setEstadoPareja(statusData);
         Animated.timing(fadeAnim, { toValue: 1, duration: 800, useNativeDriver: true }).start();
+        const pId2 = profileData?.personaje_id || '1';
+        const pData = PERSONAJES_DATA[pId2];
+        if (pData) updateWidget(statusData.estado, statusData.mensaje || '', pId2, pData.carpeta);
       }
     }
   }

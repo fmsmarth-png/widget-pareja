@@ -47,6 +47,24 @@ export const ANIMACIONES_ESTADOS: Record<string, AnimacionConfig> = {
     frameSequence: [0, 2, 3, 2],
   },
 
+  '3_COMIENDO': {
+    source: require('../../assets/characters/perro/comiendo.jpg'),
+    type: 'sprite',
+    frameCount: 4,
+    frameWidth: 1032,
+    frameHeight: 1024,
+    fps: 3,
+  },
+
+  '3_DURMIENDO': {
+    source: require('../../assets/characters/perro/durmiendo.jpg'),
+    type: 'sprite',
+    frameCount: 4,
+    frameWidth: 1032,
+    frameHeight: 1024,
+    fps: 3,
+  },
+
   // GIF placeholder para los demás mientras se crean sus sprites
   '1_TRABAJANDO': { source: require('../../assets/animations/default.gif'), type: 'gif' },
   '2_TRABAJANDO': { source: require('../../assets/animations/default.gif'), type: 'gif' },
